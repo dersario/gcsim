@@ -130,15 +130,6 @@
 - [ ] Поддерживать [nefer_ingame_observations.md](nefer_ingame_observations.md) только как журнал наблюдений, не добавляя туда implementation policy.
 - [ ] Обновить [Nefer PR checklist.md](Nefer%20PR%20checklist.md) после закрытия каждого крупного workstream.
 - [ ] Выполнить compile/test-проверку после изменений и зафиксировать результат в progress log.
-
-## 7. Необязательные задачи
-
-- [ ] Уточнить Nefer-specific Yelan N0 hook: текущие `10f` остаются best-fit предположением.
-- [ ] Уточнить Nefer-specific Xingqiu N0 hook: предполагаемые `11f` не привязаны к подтверждённому gcsim hook.
-- [ ] Решить, требуется ли отдельная поддержка Xianyun Plunge.
-- [ ] Если поддержка нужна, исследовать и добавить Nefer-specific Xianyun Plunge timing/interaction.
-- [ ] Проверить страницу DashJump и определить, можно ли безопасно использовать её значения для gcsim hooks.
-
 ## Рекомендуемый порядок выполнения
 
 1. Seed absorption, seed lifetime/cap и порог входа в Slither.
@@ -147,12 +138,3 @@
 4. Явные PoiseDMG/Hitlag mappings.
 5. Финальная проверка ICD, StrikeType, durability и particles.
 6. Генерация артефактов, тесты и обновление PR-документации.
-
-## Что уже не считается оставшейся задачей
-
-- Регистрация персонажа, ключи, импорты, shortcuts и базовый data pipeline.
-- Базовая реализация Normal Attack, Charged Attack, Skill, Burst и plunge.
-- Shadow Dance, Slither loop, Phantasm charges и swap reset.
-- Seed conversion window и сохранение seed после окончания P1.
-- Veil stacks, C1, C2, C4 и C6 в текущей принятой интерпретации.
-- Базовое назначение ICD, StrikeType, durability и частиц; для них остаётся только финальная валидация.
