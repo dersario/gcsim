@@ -11,27 +11,35 @@ import (
 )
 
 const (
-	basicChargeWindup        = 20
-	basicChargeHitmark       = 44
+	basicChargeWindup       = 20
+	basicChargeHitmark      = 44
 	slitherMaxDuration      = 150
 	slitherActivationFrames = 60
 	slitherMinCancelFrames  = 24
-	slitherMoveInterval      = 1
-	slitherMoveDistance      = 0.1
-	slitherStamInterval      = 1
-	slitherStamTickCost      = 18.15 / 60.0
-	phantasmAnimationLength  = 106
-	phantasmConsumeDewFrame  = 9
-	phantasmHit1             = 10
-	phantasmHit2             = 15
-	phantasmHit3             = 23
-	phantasmHit4             = 24
-	phantasmHit5             = 25
-	c6PhantasmHit2EM         = 0.85
-	c6PhantasmEndEM          = 1.20
+	slitherMoveInterval     = 1
+	slitherMoveDistance     = 0.1
+	slitherStamInterval     = 1
+	slitherStamTickCost     = 18.15 / 60.0
+	phantasmAnimationLength = 106
+	phantasmConsumeDewFrame = 9
+	phantasmHit1            = 10
+	phantasmHit2            = 15
+	phantasmHit3            = 23
+	phantasmHit4            = 24
+	phantasmHit5            = 25
+	c6PhantasmHit2EM        = 0.85
+	c6PhantasmEndEM         = 1.20
 )
 
 var chargeFrames []int
+
+type phantasmHitRole int
+
+const (
+	phantasmFirstPersonalHit phantasmHitRole = iota
+	phantasmSecondPersonalHit
+	phantasmIndependentHit
+)
 
 func basicChargeCanQueueAfter() int {
 	return min(chargeFrames[action.ActionAttack], chargeFrames[action.ActionSwap])
@@ -372,11 +380,11 @@ func (c *char) queuePhantasmPerformance(src int) {
 	shadeHit3.Mult = phantasm[6][c.TalentLvlSkill()] + shadeScaleBonus
 
 	ap := combat.NewCircleHitOnTarget(c.Core.Combat.Player(), nil, 5)
-	c.queuePhantasmHit(src, neferHit1, ap, phantasmHit1, true)
-	c.queuePhantasmHit(src, shadeHit1, ap, phantasmHit2, false)
-	c.queuePhantasmHit(src, shadeHit2, ap, phantasmHit3, false)
-	c.queuePhantasmHit(src, neferHit2, ap, phantasmHit4, false)
-	c.queuePhantasmHit(src, shadeHit3, ap, phantasmHit5, false)
+	c.queuePhantasmHit(src, neferHit1, ap, phantasmHit1, phantasmFirstPersonalHit)
+	c.queuePhantasmHit(src, shadeHit1, ap, phantasmHit2, phantasmIndependentHit)
+	c.queuePhantasmHit(src, shadeHit2, ap, phantasmHit3, phantasmIndependentHit)
+	c.queuePhantasmHit(src, neferHit2, ap, phantasmHit4, phantasmSecondPersonalHit)
+	c.queuePhantasmHit(src, shadeHit3, ap, phantasmHit5, phantasmIndependentHit)
 	if c.Base.Cons >= 6 {
 		c6EndHit := info.AttackInfo{
 			ActorIndex:       c.Index(),
@@ -390,7 +398,7 @@ func (c *char) queuePhantasmPerformance(src int) {
 			IgnoreDefPercent: 1,
 			Mult:             c6PhantasmEndEM,
 		}
-		c.queuePhantasmHit(src, c6EndHit, ap, phantasmAnimationLength, false)
+		c.queuePhantasmHit(src, c6EndHit, ap, phantasmAnimationLength, phantasmIndependentHit)
 	}
 }
 
@@ -399,13 +407,15 @@ func (c *char) queuePhantasmHit(
 	ai info.AttackInfo,
 	ap info.AttackPattern,
 	delay int,
-	first bool,
+	role phantasmHitRole,
 ) {
 	c.QueueCharTask(func() {
-		if first {
-			if !c.chargeRouteActive(src) {
-				return
-			}
+		// Nefer's personal hits require the charge animation to continue.
+		// The shade's attacks remain committed after the first personal hit.
+		if role != phantasmIndependentHit && !c.chargeRouteActive(src) {
+			return
+		}
+		if role == phantasmFirstPersonalHit {
 			c.phantasmCommitSrc = src
 			c.phantasmVeilMultiplier = 1 + c.phantasmVeilBonus()
 			if c.Core.Flags.LogDebug {
