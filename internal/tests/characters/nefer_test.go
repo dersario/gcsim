@@ -105,3 +105,58 @@ func TestNeferPhantasmCancel(t *testing.T) {
 		}
 	}
 }
+
+func TestNeferConsecutivePhantasmEndHits(t *testing.T) {
+	c, targets := makeCore(1)
+	c.Combat.DefaultTarget = targets[0].Key()
+	profile := testhelper.DefaultProfile(keys.Nefer, testhelper.TestWeaponKey)
+	profile.Base.Cons = 6
+	idx, err := c.AddChar(profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.Player.SetActive(idx)
+	if err := c.Init(); err != nil {
+		t.Fatal(err)
+	}
+	c.Player.SetVerdantDew(3)
+
+	hits := make(map[string]int)
+	c.Events.Subscribe(event.OnEnemyDamage, func(args ...any) {
+		attack := args[1].(*info.AttackEvent)
+		hits[attack.Info.Abil]++
+	}, "consecutive-phantasm-hits")
+	execute := func(next action.Action) {
+		t.Helper()
+		for range 300 {
+			if c.Player.ReadyCheck(next, keys.Nefer, nil) == nil {
+				if err := c.Player.Exec(next, keys.Nefer, nil); err != nil {
+					t.Fatal(err)
+				}
+				return
+			}
+			advanceCoreFrame(c)
+		}
+		t.Fatalf("%s did not become ready", next)
+	}
+	execute(action.ActionSkill)
+	execute(action.ActionCharge)
+	execute(action.ActionDash)
+	execute(action.ActionCharge)
+	for range 200 {
+		advanceCoreFrame(c)
+	}
+
+	for ability, want := range map[string]int{
+		"Phantasm Performance (Nefer 1)":    2,
+		"Phantasm Performance (Nefer 2)":    1,
+		"Phantasm Performance (Shade 1)":    2,
+		"Phantasm Performance (Shade 2)":    2,
+		"Phantasm Performance (Shade 3)":    2,
+		"Phantasm Performance (C6 End Hit)": 2,
+	} {
+		if hits[ability] != want {
+			t.Errorf("%s: got %d hits, want %d", ability, hits[ability], want)
+		}
+	}
+}
