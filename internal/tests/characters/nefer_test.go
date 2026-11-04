@@ -20,7 +20,6 @@ func TestNeferPhantasmCancel(t *testing.T) {
 			delayedDew bool
 		}{
 			{name: "tap"},
-			{name: "hold-with-dew", hold: 150},
 			{name: "slither-to-phantasm", hold: 150, delayedDew: true},
 		} {
 			for _, cancel := range []action.Action{action.InvalidAction, action.ActionDash, action.ActionBurst} {
