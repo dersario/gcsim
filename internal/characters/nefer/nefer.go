@@ -26,14 +26,12 @@ const (
 
 type char struct {
 	*tmpl.Character
-	ascendantGleam    bool
-	veilstacks        int
-	veilTracker       *stacks.MultipleRefreshNoRemove
-	maxVeilStacks     int
-	phantasmCharges   int
-	phantasmCommitSrc int
-	phantasmVeilMultiplier float64
-	chargeRoute       chargeRouteState
+	ascendantGleam  bool
+	veilstacks      int
+	veilTracker     *stacks.MultipleRefreshNoRemove
+	maxVeilStacks   int
+	phantasmCharges int
+	chargeRoute     chargeRouteState
 }
 
 type chargeRouteState struct {
